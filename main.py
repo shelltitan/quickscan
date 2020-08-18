@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Aug 15 20:32:06 2020
-
-@author: Istvan Szalai
-"""
-
-
 import tkinter
 import tkinter.filedialog
 import cv2
@@ -122,5 +114,6 @@ class VideoManager:
             return (ret, None)
 
 root = tkinter.Tk()
+root.config(background="black")
 app = Applicaation(root)
 root.mainloop()
