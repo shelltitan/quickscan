@@ -17,6 +17,11 @@ class Applicaation:
 
         self.label = tkinter.Label(master, text="This is our first GUI!")
         self.label.pack()
+        
+        self.w1 = tkinter.Scale(master, from_=0, to=255)
+        self.w1.pack()
+        self.w2 = tkinter.Scale(master, from_=0, to=255)
+        self.w2.pack()
 
         self.greet_button = tkinter.Button(master, text="Start Video", command=self.startVideo)
         self.greet_button.pack()
@@ -82,9 +87,10 @@ class Applicaation:
     def update(self):
         # Get a frame from the video source
         ret, frame = self.vid.getFrame()
+        retval, threshold = cv2.threshold(frame, self.w1.get(), self.w2.get(), cv2.THRESH_BINARY)
         
         if ret:
-            self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
+            self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(threshold))
             self.canvas.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
             self.canvas.tag_raise(self.rectangle)
         self.master.after(34, self.update)
