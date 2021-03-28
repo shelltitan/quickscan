@@ -5,7 +5,7 @@ import os
 
 
 json_path = "eye.json"
-output_path = "D:/eyeset/videos2/grayscale/train_masks"
+output_path = "D:/eyeset/videos2/grayscale/masks"
 MASK_WIDTH = 480
 MASK_HEIGHT = 720
 
