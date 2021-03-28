@@ -23,7 +23,7 @@ def jaccard_distance_loss(y_true, y_pred, smooth=100):
     jac = (intersection + smooth) / (sum_ - intersection + smooth)
     return tensorflow.stack((1 - jac) * smooth)
 
-
+"""
 # Test and plot
 y_pred = np.array([np.arange(-10, 10+0.1, 0.1)]).T
 y_true = np.zeros(y_pred.shape)
@@ -58,7 +58,7 @@ print('binary_crossentropy',r)
 print('binary_crossentropy_scaled',r/tensorflow.math.reduce_max(r))
 assert r[0]<r[1]
 assert r[1]<r[2]
-
+"""
 """
 Keraas backend old
 TYPE                 |Almost_right |half right |all_wrong

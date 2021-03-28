@@ -31,7 +31,7 @@ earlystopping = EarlyStopping(monitor = jaccard_coef_loss.jaccard_distance_loss,
 
 lr_callback = ReduceLROnPlateau(min_lr=0.000001)
 
-callbacks_list = [checkpoint, csv_logger, earlystopping]
+callbacks_list = [checkpoint, csv_logger, earlystopping, lr_callback]
 
 
 results = model.fit_generator(data_augmentation.train_generator,

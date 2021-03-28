@@ -83,7 +83,7 @@ def VNet(pretrained_weights = None, input_shape = (480,720,1), filter_size = (10
     model = keras.Model(inputs=X_input, outputs=X_out, name="VNet")
     return model
     
-model = VNet()
+#model = VNet()
 
-model.summary()
-tf.keras.utils.plot_model(model, "VNet.png", show_shapes=True)
+#model.summary()
+#tf.keras.utils.plot_model(model, "VNet.png", show_shapes=True)
