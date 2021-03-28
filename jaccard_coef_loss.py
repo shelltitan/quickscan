@@ -17,11 +17,18 @@ def jaccard_distance_loss(y_true, y_pred, smooth=100):
     @url: https://gist.github.com/wassname/f1452b748efcbeb4cb9b1d059dce6f96
     @author: wassname
     """
-    intersection = tensorflow.math.reduce_sum(tensorflow.math.abs(y_true * y_pred), axis=-1)
+    intersection = tensorflow.math.reduce_sum(tensorflow.math.abs(y_true * y_pred), axis=(1,2))
     sum_ = tensorflow.math.reduce_sum(tensorflow.math.abs(y_true)
                                       + tensorflow.math.abs(y_pred), axis=-1)
     jac = (intersection + smooth) / (sum_ - intersection + smooth)
-    return tensorflow.stack((1 - jac) * smooth)
+    return tensorflow.reduce_mean((1 - jac) * smooth)
+def jaccard_distance(y_true, y_pred, smooth=100):
+    """ Calculates mean of Jaccard distance as a loss function """
+    intersection = tensorflow.reduce_sum(y_true * y_pred, axis=(1,2))
+    sum_ = tensorflow.reduce_sum(y_true + y_pred, axis=(1,2))
+    jac = (intersection + smooth) / (sum_ - intersection + smooth)
+    jd =  (1 - jac) * smooth
+    return tensorflow.reduce_mean(jd)
 
 """
 # Test and plot
@@ -29,7 +36,7 @@ y_pred = np.array([np.arange(-10, 10+0.1, 0.1)]).T
 y_true = np.zeros(y_pred.shape)
 name='jaccard_distance_loss'
 try:
-    loss = jaccard_distance_loss(
+    loss = jaccard_distance(
         tensorflow.Variable(y_true),
         tensorflow.Variable(y_pred))
 except Exception as e:
@@ -45,7 +52,7 @@ print("TYPE                 |Almost_right |half right |all_wrong")
 y_true = np.array([[0,0,1,0],[0,0,1,0],[0,0,1.,0.]])
 y_pred = np.array([[0,0,0.9,0],[0,0,0.1,0],[1,1,0.1,1.]])
 
-r = jaccard_distance_loss(
+r = jaccard_distance(
     tensorflow.Variable(y_true),
     tensorflow.Variable(y_pred),)
 print('jaccard_distance_loss',r)
