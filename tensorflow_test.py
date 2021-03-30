@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+print(tf.test.is_gpu_available())
 
 def nval(t):
     return tf.shape(t).numpy()

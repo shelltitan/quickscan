@@ -1,5 +1,4 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import tensorflow
 
 train_datagen = ImageDataGenerator(
         rescale=1./255,
@@ -26,5 +25,5 @@ val_mask_generator = val_datagen.flow_from_directory(
 'D:/eyeset/videos2/grayscale/val_masks',color_mode='grayscale',
 batch_size = 4)#NORMALLY 4/8/16/32)
 
-train_generator = tensorflow.tuple(train_image_generator, train_mask_generator)
-val_generator = tensorflow.tuple(val_image_generator, val_mask_generator)
+train_generator = zip(train_image_generator, train_mask_generator)
+val_generator = zip(val_image_generator, val_mask_generator)

@@ -70,11 +70,11 @@ def VNet(pretrained_weights = None, input_shape = (480,720,1), filter_size = (10
                            layer_num= 1, block_type = "up", stage = 1, s = 1)
     X_out = decoding_block(X = X_out, X_jump = X_jump4, filter_size= filter_size, filters_num= 256, 
                            layer_num= 1, block_type = "up", stage = 2, s = 1)
-    X_out = decoding_block(X = X_out, X_jump = X_jump3, filter_size= filter_size, filters_num= 128, 
+    X_out = decoding_block(X = X_out, X_jump = X_jump3, filter_size= filter_size, filters_num= 192, 
                            layer_num= 1, block_type = "up", stage = 3, s = 1)
-    X_out = decoding_block(X = X_out, X_jump = X_jump2, filter_size= filter_size, filters_num= 64, 
+    X_out = decoding_block(X = X_out, X_jump = X_jump2, filter_size= filter_size, filters_num= 128, 
                            layer_num= 1, block_type = "up", stage = 4, s = 1)
-    X_out = decoding_block(X = X_out, X_jump = X_jump1, filter_size= filter_size, filters_num= 32, 
+    X_out = decoding_block(X = X_out, X_jump = X_jump1, filter_size= filter_size, filters_num= 80, 
                            layer_num= 1, block_type = "up", stage = 5, s = 1, up_sampling = False)
     # Output layer operations
     X_out = tf.keras.layers.Conv2D(filters = 1, kernel_size = (1,1) , strides = (1,1), padding = 'valid',
