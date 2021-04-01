@@ -16,6 +16,7 @@ for folder in folders:
 all_frames = os.listdir(FRAME_PATH)
 all_masks = os.listdir(MASK_PATH)
 
+#just make sure the ids are actually in order
 all_frames.sort(key=lambda var:[int(x) if x.isdigit() else x 
                                 for x in re.findall(r'[^0-9]|[0-9]+', var)])
 all_masks.sort(key=lambda var:[int(x) if x.isdigit() else x 
