@@ -1,47 +1,57 @@
-from tensorflow.keras.callbacks import ModelCheckpoint, CSVLogger ,EarlyStopping, ReduceLROnPlateau
-from keras.optimizers import Adam
-import os
-import tensorflow as tf
+import torch
+import torch.nn as nn
+from torch.utils.tensorboard import SummaryWriter
+from torch import optim
 
-import modelVNET
-import data_augmentation
+def train_loop(dataloader, model, loss_fn, optimizer):
+    size = len(dataloader.dataset)
+    for batch, (X, y) in enumerate(dataloader):
+        # Compute prediction and loss
+        pred = model(X)
+        loss = loss_fn(pred, y)
 
-NO_OF_TRAINING_IMAGES = len(os.listdir('D:/eyeset/videos2/grayscale/train_frames/train'))
-NO_OF_VAL_IMAGES = len(os.listdir('D:/eyeset/videos2/grayscale/val_frames/val'))
+        # Backpropagation
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-NO_OF_EPOCHS = 100
-BATCH_SIZE = 8
+        if batch % 100 == 0:
+            loss, current = loss.item(), batch * len(X)
+            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
-weights_path = 'weights'
+def test_loop(dataloader, model, loss_fn):
+    size = len(dataloader.dataset)
+    test_loss, correct = 0, 0
 
-model = modelVNET.VNet()
-opt = Adam(lr=1E-5, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    with torch.no_grad():
+        for X, y in dataloader:
+            pred = model(X)
+            test_loss += loss_fn(pred, y).item()
+            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
 
-model.compile(loss=tf.keras.losses.CategoricalCrossentropy(),
-              optimizer=opt,
-              metrics='acc')
+    test_loss /= size
+    correct /= size
+    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
-checkpoint = ModelCheckpoint(weights_path, monitor=tf.keras.losses.CategoricalCrossentropy(), 
-                             verbose=1, save_best_only=True, mode='max')
+writer = SummaryWriter(comment=f'LR_{lr}_BS_{batch_size}_SCALE_{img_scale}')
+logging.info(f'''Starting training:
+        Epochs:          {epochs}
+        Batch size:      {batch_size}
+        Learning rate:   {lr}
+        Training size:   {n_train}
+        Validation size: {n_val}
+        Checkpoints:     {save_cp}
+        Device:          {device.type}
+        Images scaling:  {img_scale}
+    ''')
 
-csv_logger = CSVLogger('./log.out', append=True, separator=';')
+loss_fn = nn.BCEWithLogitsLoss()
+optimizer = optim.RMSprop(net.parameters(), lr=lr, weight_decay=1e-8, momentum=0.9)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min' if net.n_classes > 1 else 'max', patience=2)
 
-earlystopping = EarlyStopping(monitor = tf.keras.losses.CategoricalCrossentropy(), verbose = 1,
-                              min_delta = 0.01, patience = 3, mode = 'max')
-
-lr_callback = ReduceLROnPlateau(min_lr=0.000001)
-
-callbacks_list = [checkpoint, csv_logger, earlystopping, lr_callback]
-
-
-results = model.fit(data_augmentation.train_image_generator,
-                    data_augmentation.train_mask_generator,
-                    epochs=NO_OF_EPOCHS, 
-                    steps_per_epoch = (NO_OF_TRAINING_IMAGES//BATCH_SIZE),
-                    validation_data = data_augmentation.val_generator, 
-                    validation_steps = (NO_OF_VAL_IMAGES//4),
-                    verbose=1,
-                    shuffle=True,
-                    callbacks=callbacks_list)
-
-model.save("models/"+"VNet.h5")
+epochs = 10
+for t in range(epochs):
+    print(f"Epoch {t+1}\n-------------------------------")
+    train_loop(train_dataloader, model, loss_fn, optimizer)
+    test_loop(test_dataloader, model, loss_fn)
+print("Done!")
