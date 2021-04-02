@@ -1,49 +1,37 @@
-from torch.utils.data.dataset import Dataset
-from torchvision import transforms
-import torchvision.transforms.functional as TF
 import torch
-import random
-from PIL import Image
+from torch.utils.data.dataset import Dataset
+from skimage.io import imread
+from torch.utils import data
 
 torch.manual_seed(2953)
-random.seed(18557)
 
 class EyeDataset(Dataset):
-    def __init__(self, image_paths, mask_paths, train=True):
-        self.image_paths = image_paths
-        self.mask_paths = mask_paths
+    def __init__(self,
+                 images: list,
+                 masks: list,
+                 transform=None,
+                 train=True):
+        self.images = images
+        self.masks = masks
+        self.transform = transform
+        self.image_dtype = torch.float32
+        self.mask_dtype = torch.long
         
-    def transform(self, image, mask):
-        # Resize
-        resize = transforms.Resize(size=(520, 520))
-        image = resize(image)
-        mask = resize(mask)
-
-        # Random crop
-        i, j, h, w = transforms.RandomCrop.get_params(
-            image, output_size=(512, 512))
-        image = TF.crop(image, i, j, h, w)
-        mask = TF.crop(mask, i, j, h, w)
-
-        # Random horizontal flipping
-        if random.random() > 0.5:
-            image = TF.hflip(image)
-            mask = TF.hflip(mask)
-
-        # Random vertical flipping
-        if random.random() > 0.5:
-            image = TF.vflip(image)
-            mask = TF.vflip(mask)
-
-        # Transform to tensor
-        image = TF.to_tensor(image)
-        mask = TF.to_tensor(mask)
-        return image, mask
+    def __getitem__(self, index: int):
+        # Select the sample
+        image_ID = self.images[index]
+        mask_ID = self.masks[index]
         
-    def __getitem__(self, index):
-        image = Image.open(self.image_paths[index])
-        mask = Image.open(self.mask_paths[index])
-        x, y = self.transform(image, mask)
+        # Load input and target
+        x, y = imread(image_ID), imread(mask_ID)
+        
+        # Preprocessing
+        if self.transform is not None:
+            x, y = self.transform(x, y)
+        
+        # Typecasting
+        x, y = torch.from_numpy(x).type(self.inputs_dtype), torch.from_numpy(y).type(self.targets_dtype)
+
         return x, y
 
     def __len__(self):
