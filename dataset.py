@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data.dataset import Dataset
 from skimage.io import imread
-from torch.utils import data
 
 torch.manual_seed(2953)
 
@@ -30,9 +29,9 @@ class EyeDataset(Dataset):
             x, y = self.transform(x, y)
         
         # Typecasting
-        x, y = torch.from_numpy(x).type(self.inputs_dtype), torch.from_numpy(y).type(self.targets_dtype)
+        x, y = torch.from_numpy(x).type(self.image_dtype), torch.from_numpy(y).type(self.mask_dtype)
 
         return x, y
 
     def __len__(self):
-        return len(self.image_paths)
+        return len(self.images)
