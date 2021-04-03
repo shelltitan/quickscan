@@ -8,7 +8,7 @@ transforms = transformations.Compose([
     transformations.Resize(input_size=(64, 64, 3), target_size=(64, 64)),
     transformations.DenseTarget(),
     transformations.MoveAxis(),
-    transformations.Normalize01()
+    transformations.Normalize_to_01()
 ])
 
 x_t, y_t = transforms(x, y)
