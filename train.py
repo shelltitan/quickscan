@@ -49,12 +49,12 @@ dataset_valid = EyeDataset(inputs=images_valid,
 
 # dataloader training
 dataloader_training = DataLoader(dataset=dataset_train,
-                                 batch_size=8,
+                                 batch_size=2,
                                  shuffle=True)
 
 # dataloader validation
 dataloader_validation = DataLoader(dataset=dataset_valid,
-                                   batch_size=4,
+                                   batch_size=2,
                                    shuffle=True)
 
 # device
