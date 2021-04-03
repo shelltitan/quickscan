@@ -1,5 +1,4 @@
 import dataset_generate
-from tqdm import tqdm
 
 x, y = next(iter(dataset_generate.dataloader_training))
 
