@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+from torchsummary import summary
+
 # Get cpu or gpu device for training.
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print("Using {} device".format(device))
@@ -91,4 +93,4 @@ class VNet_Torch(nn.Module):
         return logits
 
 #model = VNet_Torch().to(device)
-#print(model)
+#summary = summary(model, (1, 480, 720))

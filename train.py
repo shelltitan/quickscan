@@ -1,57 +1,91 @@
 import torch
 import torch.nn as nn
-from torch.utils.tensorboard import SummaryWriter
+import albumentations
+import pathlib
+from dataset import EyeDataset
+from models.VNet_model import VNet_Torch
+from trainer import Trainer
 from torch import optim
+from transformations import Compose, AlbuSeg2d, DenseTarget, FixGreyScale
+from transformations import MoveAxis, Normalize_to_01, Resize
+from torch.utils.data import DataLoader
+# root directory
+root = pathlib.Path.cwd() / 'Data'
+def get_filenames_of_path(path: pathlib.Path, ext: str = '*'):
+    """Returns a list of files in a directory/path. Uses pathlib."""
+    filenames = [file for file in path.glob(ext) if file.is_file()]
+    return filenames
 
-def train_loop(dataloader, model, loss_fn, optimizer):
-    size = len(dataloader.dataset)
-    for batch, (X, y) in enumerate(dataloader):
-        # Compute prediction and loss
-        pred = model(X)
-        loss = loss_fn(pred, y)
+# input and target files
+images_train = get_filenames_of_path(root / 'train_frames')
+masks_train = get_filenames_of_path(root / 'train_masks')
+images_valid = get_filenames_of_path(root / 'val_frames')
+masks_valid = get_filenames_of_path(root / 'val_masks')
 
-        # Backpropagation
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+# training transformations and augmentations
+transforms = Compose([
+    DenseTarget(),
+    AlbuSeg2d(albu=albumentations.HorizontalFlip(p=0.5)),
+    AlbuSeg2d(albu=albumentations.Rotate(limit=360,p=0.2)),
+    Normalize_to_01(),
+    FixGreyScale()
+])
+# validation transformations
+transforms_validation = Compose([
+    DenseTarget(),
+    Normalize_to_01(),
+    FixGreyScale()
+])
 
-        if batch % 100 == 0:
-            loss, current = loss.item(), batch * len(X)
-            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+# dataset training
+dataset_train = EyeDataset(inputs=images_train,
+                           targets=masks_train,
+                           transform=transforms)
 
-def test_loop(dataloader, model, loss_fn):
-    size = len(dataloader.dataset)
-    test_loss, correct = 0, 0
+# dataset validation
+dataset_valid = EyeDataset(inputs=images_valid,
+                           targets=masks_valid,
+                           transform=transforms)
 
-    with torch.no_grad():
-        for X, y in dataloader:
-            pred = model(X)
-            test_loss += loss_fn(pred, y).item()
-            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+# dataloader training
+dataloader_training = DataLoader(dataset=dataset_train,
+                                 batch_size=8,
+                                 shuffle=True)
 
-    test_loss /= size
-    correct /= size
-    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+# dataloader validation
+dataloader_validation = DataLoader(dataset=dataset_valid,
+                                   batch_size=4,
+                                   shuffle=True)
 
-writer = SummaryWriter(comment=f'LR_{lr}_BS_{batch_size}_SCALE_{img_scale}')
-logging.info(f'''Starting training:
-        Epochs:          {epochs}
-        Batch size:      {batch_size}
-        Learning rate:   {lr}
-        Training size:   {n_train}
-        Validation size: {n_val}
-        Checkpoints:     {save_cp}
-        Device:          {device.type}
-        Images scaling:  {img_scale}
-    ''')
+# device
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+else:
+    torch.device('cpu')
 
-loss_fn = nn.BCEWithLogitsLoss()
-optimizer = optim.RMSprop(net.parameters(), lr=lr, weight_decay=1e-8, momentum=0.9)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min' if net.n_classes > 1 else 'max', patience=2)
+# model
+model = VNet_Torch().to(device)
 
-epochs = 10
-for t in range(epochs):
-    print(f"Epoch {t+1}\n-------------------------------")
-    train_loop(train_dataloader, model, loss_fn, optimizer)
-    test_loop(test_dataloader, model, loss_fn)
-print("Done!")
+# criterion
+criterion = torch.nn.BCEWithLogitsLoss()
+
+# optimizer
+optimizer = torch.optim.RMSprop(model.parameters(), lr=0.01, weight_decay=1e-8, momentum=0.9)
+
+#learning rate scheduler
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=2)
+
+# trainer
+trainer = Trainer(model=model,
+                  device=device,
+                  criterion=criterion,
+                  optimizer=optimizer,
+                  training_DataLoader=dataloader_training,
+                  validation_DataLoader=dataloader_validation,
+                  lr_scheduler=scheduler,
+                  epochs=10,
+                  epoch=0,
+                  notebook=False)
+
+# start training
+training_losses, validation_losses, lr_rates = trainer.run_trainer()

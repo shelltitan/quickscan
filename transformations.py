@@ -27,6 +27,11 @@ def re_normalize(inp: np.ndarray,
     inp_out = bytescale(inp, low=low, high=high)
     return inp_out
 
+def add_channel_to_greyscale(inp: np.ndarray):
+    """Adds a channel to greyscale so it becomes [C, H, W]"""
+    x = np.expand_dims(inp, 0)
+    return x
+
 class Compose:
     """
     Composes several transforms together.
@@ -67,6 +72,20 @@ class DenseTarget:
 
     def __call__(self, inp: np.ndarray, tar: np.ndarray):
         tar = create_dense_target(tar)
+
+        return inp, tar
+
+    def __repr__(self):
+        return str({self.__class__.__name__: self.__dict__})
+
+class FixGreyScale:
+    """Creates segmentation maps with consecutive integers, starting from 0"""
+
+    def __init__(self):
+        pass
+
+    def __call__(self, inp: np.ndarray, tar: np.ndarray):
+        inp = add_channel_to_greyscale(inp)
 
         return inp, tar
 

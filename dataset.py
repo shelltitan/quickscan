@@ -6,12 +6,12 @@ torch.manual_seed(2953)
 
 class EyeDataset(Dataset):
     def __init__(self,
-                 images: list,
-                 masks: list,
+                 inputs: list,
+                 targets: list,
                  transform=None,
                  train=True):
-        self.images = images
-        self.masks = masks
+        self.images = inputs
+        self.masks = targets
         self.transform = transform
         self.image_dtype = torch.float32
         self.mask_dtype = torch.long
