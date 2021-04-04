@@ -23,14 +23,16 @@ masks_valid = get_filenames_of_path(root / 'val_masks')
 
 # training transformations and augmentations
 transforms = Compose([
-    DenseTarget(),
+    Resize(input_size=(240, 320), target_size=(240, 320)),
     AlbuSeg2d(albu=albumentations.HorizontalFlip(p=0.5)),
-    AlbuSeg2d(albu=albumentations.Rotate(limit=360,p=0.2)),
+    AlbuSeg2d(albu=albumentations.Rotate(limit=20,p=0.2)),
+    DenseTarget(),
     Normalize_to_01(),
     FixGreyScale()
 ])
 # validation transformations
 transforms_validation = Compose([
+    Resize(input_size=(240, 320), target_size=(240, 320)),
     DenseTarget(),
     Normalize_to_01(),
     FixGreyScale()
@@ -69,7 +71,7 @@ model = VNet_Torch().to(device)
 criterion = torch.nn.BCEWithLogitsLoss()
 
 # optimizer
-optimizer = torch.optim.RMSprop(model.parameters(), lr=0.01, weight_decay=1e-8, momentum=0.9)
+optimizer = torch.optim.RMSprop(model.parameters(), lr=0.01)
 
 #learning rate scheduler
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=2)

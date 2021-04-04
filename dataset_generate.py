@@ -21,9 +21,10 @@ masks_valid = get_filenames_of_path(root / 'val_masks')
 
 # training transformations and augmentations
 transforms = Compose([
-    DenseTarget(),
+    Resize(input_size=(480, 720), target_size=(240, 360)),
     AlbuSeg2d(albu=albumentations.HorizontalFlip(p=0.5)),
-    AlbuSeg2d(albu=albumentations.Rotate(limit=360,p=0.2)),
+    AlbuSeg2d(albu=albumentations.Rotate(limit=20,p=0.2)),
+    DenseTarget(),
     Normalize_to_01(),
     FixGreyScale()
 ])

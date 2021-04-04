@@ -38,13 +38,13 @@ class Decode(nn.Module):
     """Decoding with a convultion that changes the dimensions by a factor of 2 
     and a Singleconv"""
 
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, mid_channel, out_channels):
         super().__init__()
         self.decode =  nn.Sequential(
-            torch.nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2,stride=2),
-            nn.BatchNorm2d(out_channels),
+            torch.nn.ConvTranspose2d(in_channels, in_channels, kernel_size=2,stride=2),
+            nn.BatchNorm2d(in_channels),
             nn.ReLU(inplace=True))
-        self.conv = Singleconv(in_channels, out_channels)
+        self.conv = Singleconv(mid_channel, out_channels)
     
     def forward(self, x,x_2):
         x = self.decode(x)
@@ -73,11 +73,11 @@ class VNet_Torch(nn.Module):
         self.encode3 = Encode(32, 64)
         self.encode4 = Encode(64, 128)
         self.encode5 = Encode(128, 256)
-        self.decode5 = Decode(256, 128)
-        self.decode4 = Decode(128, 64)
-        self.decode3 = Decode(64, 32)
-        self.decode2 = Decode(32, 16)
-        self.decode1 = Outconv(16,1)
+        self.decode5 = Decode(256, 384, 256)#384 = 256 + 128
+        self.decode4 = Decode(256, 320, 128)#320 = 256 + 64
+        self.decode3 = Decode(128, 160, 64)#250 = 128 + 32
+        self.decode2 = Decode(64, 80, 32)#80 = 64 + 16
+        self.decode1 = Outconv(32,1)
 
     def forward(self, x):
         x1 = self.encode1(x)
