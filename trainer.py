@@ -72,6 +72,7 @@ class Trainer:
             input, target = x.to(self.device), y.to(self.device)  # send to device (GPU or CPU)
             self.optimizer.zero_grad()  # zerograd the parameters
             out = self.model(input)  # one forward pass
+            target = target.type_as(out)
             loss = self.criterion(out, target.unsqueeze(1))  # calculate loss
             loss_value = loss.item()
             train_losses.append(loss_value)
