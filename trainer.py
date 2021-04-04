@@ -103,7 +103,8 @@ class Trainer:
 
             with torch.no_grad():
                 out = self.model(input)
-                loss = self.criterion(out, target)
+                target = target.type_as(out)
+                loss = self.criterion(out, target)  
                 loss_value = loss.item()
                 valid_losses.append(loss_value)
 
