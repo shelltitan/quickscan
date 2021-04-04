@@ -58,7 +58,7 @@ class Outconv(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(Outconv, self).__init__()
         self.convout = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=9, dilation=2),
+            nn.Conv2d(in_channels, out_channels, kernel_size=1),
             nn.ReLU(inplace=True))
     
     def forward(self, x):
@@ -92,5 +92,5 @@ class VNet_Torch(nn.Module):
         logits = self.decode1(x)
         return logits
 
-#model = VNet_Torch().to(device)
-#summary = summary(model, (1, 480, 720))
+model = VNet_Torch().to(device)
+summary = summary(model, (1, 480, 720))
