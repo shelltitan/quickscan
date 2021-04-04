@@ -14,7 +14,7 @@ class EyeDataset(Dataset):
         self.masks = targets
         self.transform = transform
         self.image_dtype = torch.float32
-        self.mask_dtype = torch.long
+        self.mask_dtype = torch.float32
         
     def __getitem__(self, index: int):
         # Select the sample
