@@ -72,7 +72,6 @@ class Trainer:
             input, target = x.to(self.device), y.to(self.device)  # send to device (GPU or CPU)
             self.optimizer.zero_grad()  # zerograd the parameters
             out = self.model(input)  # one forward pass
-            target = target.type_as(out)
             loss = self.criterion(out, target.unsqueeze(1))  # calculate loss
             loss_value = loss.item()
             train_losses.append(loss_value)
@@ -103,7 +102,6 @@ class Trainer:
 
             with torch.no_grad():
                 out = self.model(input)
-                target = target.type_as(out)
                 loss = self.criterion(out, target)  
                 loss_value = loss.item()
                 valid_losses.append(loss_value)
