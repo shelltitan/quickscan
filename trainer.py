@@ -51,9 +51,9 @@ class Trainer:
             """Learning rate scheduler block"""
             if self.lr_scheduler is not None:
                 if self.validation_DataLoader is not None and self.lr_scheduler.__class__.__name__ == 'ReduceLROnPlateau':
-                    self.lr_scheduler.batch(self.validation_loss[i])  # learning rate scheduler step with validation loss
+                    self.lr_scheduler.step(self.validation_loss[i])  # learning rate scheduler step with validation loss
                 else:
-                    self.lr_scheduler.batch()  # learning rate scheduler step
+                    self.lr_scheduler.step()  # learning rate scheduler step
         return self.training_loss, self.validation_loss, self.learning_rate
     
     def _train(self):
@@ -72,6 +72,7 @@ class Trainer:
             input, target = x.to(self.device), y.to(self.device)  # send to device (GPU or CPU)
             self.optimizer.zero_grad()  # zerograd the parameters
             out = self.model(input)  # one forward pass
+            target = target.type_as(out) #converting long to flaot for BCE
             loss = self.criterion(out, target.unsqueeze(1))  # calculate loss
             loss_value = loss.item()
             train_losses.append(loss_value)
@@ -102,7 +103,8 @@ class Trainer:
 
             with torch.no_grad():
                 out = self.model(input)
-                loss = self.criterion(out, target)  
+                target = target.type_as(out)
+                loss = self.criterion(out, target.unsqueeze(1))  
                 loss_value = loss.item()
                 valid_losses.append(loss_value)
 
