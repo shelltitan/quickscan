@@ -92,5 +92,5 @@ class VNet_Torch(nn.Module):
         logits = self.decode1(x)
         return logits
 
-model = VNet_Torch().to(device)
-summary = summary(model, (1, 480, 720))
+#model = VNet_Torch().to(device)
+#summary = summary(model, (1, 480, 720))
